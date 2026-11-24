@@ -1,0 +1,41 @@
+@view-transition { navigation: auto; }
+
+::view-transition-group(root) { animation-duration: 560ms; }
+::view-transition-old(root) { animation: none; opacity: 1; mix-blend-mode: normal; }
+::view-transition-new(root) {
+  animation: mode-open 560ms cubic-bezier(.22,.68,.19,1) both;
+  mix-blend-mode: normal;
+}
+
+.mode-leaving::after, .mode-curtain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+.mode-leaving::after {
+  background: var(--next-surface);
+  animation: mode-ripple 190ms ease-out both;
+}
+.mode-curtain::before {
+  animation: mode-uncover 560ms cubic-bezier(.22,.68,.19,1) both;
+}
+
+@keyframes mode-ripple {
+  from { clip-path: circle(5px at var(--mode-x) var(--mode-y)); opacity: .68; }
+  to { clip-path: circle(120px at var(--mode-x) var(--mode-y)); opacity: 0; }
+}
+@keyframes mode-open {
+  from { clip-path: inset(100% 0 0); }
+  to { clip-path: inset(0); }
+}
+@keyframes mode-uncover {
+  from { clip-path: inset(0); }
+  to { clip-path: inset(0 0 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  .mode-leaving::after, .mode-curtain::before { content: none; }
+}

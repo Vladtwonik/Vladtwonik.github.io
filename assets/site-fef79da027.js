@@ -24,9 +24,28 @@ if(HOVER&&!CALM)$$('[data-slot]').forEach(slot);
 const pill=$('#pill');addEventListener('scroll',()=>{pill.classList.toggle('up',scrollY>40);if(scrollY<innerHeight*.5)$$('.pill nav a').forEach(a=>a.classList.remove('on'))},{passive:true});
 const navIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)$$('.pill nav a').forEach(a=>a.classList.toggle('on',a.hash=='#'+e.target.id))}),{rootMargin:'-45% 0px -50% 0px'});
 ['work','do','about','form'].forEach(id=>{const s=document.getElementById(id);if(s)navIO.observe(s)});
-/* переход между страницами — мягкое затухание */
-$$('a.js-mode').forEach(a=>a.addEventListener('click',e=>{if(e.metaKey||e.ctrlKey)return;e.preventDefault();document.body.classList.add('leaving');setTimeout(()=>location.href=a.href,CALM?0:380)}));
-addEventListener('pageshow',()=>document.body.classList.remove('leaving'));
+/* Switch between the two real URLs, with a ripple before navigation. */
+let modePending = false;
+$$('a.js-mode').forEach(link => link.addEventListener('click', event => {
+  if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || CALM) return;
+  event.preventDefault();
+  if (modePending) return;
+  modePending = true;
+  const root = document.documentElement;
+  const box = link.closest('.mode').getBoundingClientRect();
+  root.style.setProperty('--mode-x', (box.left + box.width / 2) + 'px');
+  root.style.setProperty('--mode-y', (box.bottom - 2) + 'px');
+  try { sessionStorage.setItem('landing-mode:' + link.pathname, String(Date.now())); } catch (_) {}
+  root.classList.add('mode-leaving');
+  setTimeout(() => location.assign(link.href), 140);
+}));
+addEventListener('pageswap', event => {
+  if (!modePending) event.viewTransition?.skipTransition();
+});
+addEventListener('pageshow', () => {
+  modePending = false;
+  document.documentElement.classList.remove('mode-leaving');
+});
 
 /* lightbox */
 let cs=0,ci=0;const lb=$('#lb'),lbi=$('#lbi'),lbth=$('#lbth');
@@ -82,19 +101,138 @@ const w=$('#work');const set=v=>{w.classList.toggle('is-list',v=='list');$$('.to
 $$('.tog button').forEach(b=>b.onclick=()=>{set(b.dataset.v);dispatchEvent(new Event('resize'))});
 try{const v=localStorage.getItem('view');if(v)set(v)}catch(_){}})();
 
-/* засушенные цветы за курсором: изредка появляются и лежат на фоне */
-(()=>{if(!HOVER||CALM||!FLORA.length)return;const layer=$('#flora');let acc=0,lx=null,ly=null,live=[];
-const SKIP='input,textarea,select,button,a,label,.tile,.card,.lrow,.blank,.letter,.env,.lb,.pill,.inf';
-addEventListener('pointermove',e=>{if(e.pointerType!='mouse')return;if(lx!=null)acc+=Math.hypot(e.clientX-lx,e.clientY-ly);lx=e.clientX;ly=e.clientY;
-if(acc<230)return;acc=0;if(Math.random()>.55)return;if(e.target.closest&&e.target.closest(SKIP))return;
-const im=new Image();im.src=FLORA[Math.random()*FLORA.length|0];im.alt='';im.className='fl';
-const s=46+Math.random()*64,r=(Math.random()*80-40)|0;
-im.style.cssText=`left:${e.pageX+(Math.random()*40-20)-s/2}px;top:${e.pageY+(Math.random()*40-20)-s/2}px;width:${s}px;--r:${r}deg`;
-layer.appendChild(im);live.push(im);
-setTimeout(()=>{im.classList.add('out');setTimeout(()=>im.remove(),1600)},6000+Math.random()*5000);
-if(live.length>18){const o=live.shift();o.classList.add('out');setTimeout(()=>o.remove(),1600)}
-live=live.filter(x=>x.isConnected)},{passive:true});
-const fit=()=>layer.style.height=document.documentElement.scrollHeight+'px';fit();addEventListener('resize',fit);addEventListener('load',fit)})();
+/* Pointer particles belong to the paper layer. */
+(() => {
+  if (!HOVER || CALM || (FILM && !FLORA.length)) return;
+  const canvas = $('#particles');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const size = 4;
+  const sprites = FILM ? FLORA.map(src => {
+    const image = new Image();
+    image.src = src;
+    return image;
+  }) : [];
+  const obstacles = $$('.strip, .pill, header, h1, h2, .meta, .lead, .ctas, .fig, .col, .inf, .list, .hint, .label, .tog, .rows, .desk, .formgrid, footer');
+  const skip = 'a, button, form, .lb, .inf, .list';
+  const particles = [];
+  const random = (min, max) => min + Math.random() * (max - min);
+  let frame = 0, width, height, ratio, previous = null, distance = 0;
+  let lastFlowers = new Set();
+
+  function resize() {
+    width = innerWidth;
+    height = innerHeight;
+    ratio = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize, {passive: true});
+
+  function draw(now) {
+    frame = 0;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#e5c5ac';
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      const progress = (now - p.start) / p.life;
+      if (progress >= 1) {
+        particles.splice(i, 1);
+        continue;
+      }
+      const travel = 1 - (1 - Math.max(0, progress)) ** 3;
+      const x = p.x - scrollX + p.dx * travel;
+      const y = p.y - scrollY + p.dy * travel;
+      if (x < -100 || x > width + 100 || y < -100 || y > height + 100) continue;
+      ctx.globalAlpha = p.alpha * Math.min(1, (1 - progress) * (p.settle ? 4 : 1.6));
+      if (p.image) {
+        const h = p.size * p.image.naturalHeight / p.image.naturalWidth;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(p.angle + p.spin * travel);
+        ctx.drawImage(p.image, -p.size / 2, -h / 2, p.size, h);
+        ctx.restore();
+      } else {
+        ctx.fillRect(Math.round(x - size / 2), Math.round(y - size / 2), size, size);
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (!FILM && particles.length) {
+      for (const node of obstacles) {
+        const rect = node.getBoundingClientRect();
+        if (rect.width && rect.height && rect.bottom > 0 && rect.top < height) {
+          ctx.clearRect(rect.left - 5, rect.top - 5, rect.width + 10, rect.height + 10);
+        }
+      }
+    }
+    if (particles.length) frame = requestAnimationFrame(draw);
+  }
+  function emit(particle) {
+    if (particles.length === 160) particles.shift();
+    particles.push({...particle, start: performance.now()});
+    if (!frame) frame = requestAnimationFrame(draw);
+  }
+  function flower(x, y, image, burst, angle = 0) {
+    const spread = burst ? random(26, 72) : random(2, 14);
+    emit({x, y, image, size: burst ? random(15, 30) : random(32, 59),
+      dx: Math.cos(angle) * spread, dy: Math.sin(angle) * spread + (burst ? 8 : 0),
+      angle: random(-1, 1), spin: random(-1.7, 1.7), settle: !burst,
+      alpha: .92, life: burst ? random(590, 930) : random(6200, 10800)});
+  }
+
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (e.target.closest(skip) || lb.classList.contains('on')) {
+      previous = null;
+      distance = 0;
+      return;
+    }
+    if (previous) distance += Math.hypot(e.clientX - previous.x, e.clientY - previous.y);
+    previous = {x: e.clientX, y: e.clientY};
+    if (distance < (FILM ? 230 : 15)) return;
+    distance = 0;
+    if (FILM) {
+      if (Math.random() > .58) return;
+      const ready = sprites.filter(image => image.complete && image.naturalWidth);
+      if (ready.length) flower(e.pageX, e.pageY, ready[Math.floor(Math.random() * ready.length)], false, random(0, Math.PI * 2));
+    } else {
+      for (let i = 0; i < 3; i++) {
+        emit({x: e.pageX + random(-17, 17), y: e.pageY + random(-17, 17),
+          dx: random(-11, 11), dy: random(-11, 11), alpha: random(.26, .63), life: random(280, 590)});
+      }
+    }
+  }, {passive: true});
+
+  addEventListener('click', e => {
+    if (e.pointerType !== 'mouse' || e.target.closest(skip) || lb.classList.contains('on')) return;
+    const turn = random(0, Math.PI * 2);
+    if (FILM) {
+      const pool = sprites.filter(image => image.complete && image.naturalWidth);
+      const count = Math.min(pool.length, Math.random() < .7 ? 4 : 5);
+      const burst = new Set();
+      for (let i = 0; i < count; i++) {
+        const fresh = i === 0 ? pool.filter(image => !lastFlowers.has(image)) : pool;
+        const available = fresh.length ? fresh : pool;
+        const image = available[Math.floor(Math.random() * available.length)];
+        burst.add(image);
+        pool.splice(pool.indexOf(image), 1);
+        flower(e.pageX, e.pageY, image, true, turn + Math.PI * 2 * i / count + random(-.4, .4));
+      }
+      lastFlowers = burst;
+    } else {
+      for (let i = 0; i < 30; i++) {
+        const angle = turn + Math.PI * 2 * i / 30 + random(-.12, .12);
+        const radius = random(57, 105);
+        emit({x: e.pageX + random(-4, 4), y: e.pageY + random(-4, 4),
+          dx: Math.cos(angle) * radius, dy: Math.sin(angle) * radius,
+          alpha: random(.52, .94), life: random(460, 690)});
+      }
+    }
+  });
+})();
 
 /* form */
 (()=>{const f=$('#bk'),err=$('#err'),btn=f.querySelector('button[type=submit]');
@@ -113,6 +251,117 @@ catch(_){err.style.display='block';btn.disabled=false;btn.style.opacity=''}})})(
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 $$('.rv').forEach(el=>io.observe(el));
 const tick=()=>{const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Almaty'});$$('.clk').forEach(c=>c.textContent=t)};tick();setInterval(tick,30000);
+
+/* A painted octave repeats down the paper. Each key plays a short mallet phrase. */
+(() => {
+  const rail = $('#piano');
+  const Audio = window.AudioContext || window.webkitAudioContext;
+  if (!rail || !Audio) return;
+
+  const whites = [0, 2, 4, 5, 7, 9, 11];
+  const phrases = [
+    [[60, 64, 67], .017], [[67, 69, 67, 72], .061],
+    [[62, 69], 0],        [[72, 76, 79], .035],
+    [[64, 67, 72], .014], [[53, 57, 60], .020],
+    [[69, 72, 69, 76], .055], [[55, 62, 67], .020],
+    [[67, 76], .013],     [[57, 60, 64], .018],
+    [[72, 76, 72, 74], .057], [[64, 71], 0],
+  ];
+  // The long fundamental and octave ring like a tine. The higher modes give the wooden attack.
+  const partials = [[1, .096, .67], [2.004, .031, .35], [3.992, .029, .145], [8.91, .011, .064]];
+  let audio, master, tabKey;
+
+  async function play(key) {
+    try {
+      if (!audio) {
+        audio = new Audio();
+        master = audio.createDynamicsCompressor();
+        master.threshold.value = -17;
+        master.connect(audio.destination);
+      }
+      if (audio.state !== 'running') await audio.resume();
+    } catch (_) {
+      return;
+    }
+
+    const [notes, spacing] = phrases[Number(key.dataset.phrase)];
+    const shift = Number(key.dataset.shift);
+    const time = audio.currentTime + .008;
+    notes.forEach((midi, index) => {
+      const start = time + index * spacing;
+      const fundamental = 440 * 2 ** ((midi + shift - 69) / 12);
+      const strength = index ? .83 : 1;
+      partials.forEach(([ratio, level, decay]) => {
+        const tone = audio.createOscillator();
+        const gain = audio.createGain();
+        tone.frequency.value = fundamental * ratio;
+        gain.gain.setValueAtTime(.0001, start);
+        gain.gain.exponentialRampToValueAtTime(level * strength, start + .004);
+        gain.gain.exponentialRampToValueAtTime(level * strength * .37, start + decay * .20);
+        gain.gain.exponentialRampToValueAtTime(.0001, start + decay);
+        tone.connect(gain).connect(master);
+        tone.start(start);
+        tone.stop(start + decay + .008);
+      });
+    });
+    if (!CALM) key.animate([{backgroundColor: '#aa674a55'}, {backgroundColor: 'transparent'}], {duration: 260});
+  }
+
+  function appendOctave(index) {
+    const octave = document.createElement('div');
+    octave.className = 'piano-octave';
+    function addKey(phrase, boundary) {
+      const key = document.createElement('button');
+      key.type = 'button';
+      key.tabIndex = -1;
+      key.dataset.phrase = phrase;
+      key.dataset.shift = index % 3 === 1 ? 12 : 0;
+      key.setAttribute('aria-label', 'Клавиша ' + (index * 12 + phrase + 1));
+      if (boundary) {
+        key.className = 'piano-black';
+        key.style.top = (boundary / whites.length * 100) + '%';
+      }
+      octave.appendChild(key);
+    }
+    whites.forEach((phrase, row) => {
+      addKey(phrase);
+      if (whites[row + 1] === phrase + 2) addKey(phrase + 1, row + 1);
+    });
+    rail.appendChild(octave);
+  }
+
+  function fit() {
+    const octaveHeight = rail.clientWidth < 39 ? 245 : 315;
+    const count = Math.max(1, Math.round(rail.clientHeight / octaveHeight));
+    while (rail.children.length > count) rail.lastElementChild.remove();
+    while (rail.children.length < count) appendOctave(rail.children.length);
+    if (!tabKey || !tabKey.isConnected) {
+      tabKey = rail.querySelector('button');
+      tabKey.tabIndex = 0;
+    }
+  }
+
+  rail.addEventListener('click', event => {
+    const key = event.target.closest('button');
+    if (key) play(key);
+  });
+  rail.addEventListener('focusin', event => {
+    tabKey.tabIndex = -1;
+    tabKey = event.target;
+    tabKey.tabIndex = 0;
+  });
+  rail.addEventListener('keydown', event => {
+    const direction = {ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1}[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const keys = [...rail.querySelectorAll('button')];
+    keys[mod(keys.indexOf(event.target) + direction, keys.length)].focus();
+  });
+
+  rail.hidden = false;
+  fit();
+  new ResizeObserver(fit).observe(rail);
+})();
 
 /* fashion hero: контуры вокруг вырезки */
 (()=>{const P=PAGE.paths||[],svg=$('#lines'),fig=$('#fig');if(!P.length||!svg||CALM)return;

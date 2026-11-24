@@ -1,7 +1,28 @@
 <!doctype html>
 <html lang="ru" class="nojs">
 <head>
-<script>document.documentElement.className="js"</script>
+<script>
+const landingRoot = document.documentElement;
+landingRoot.className = "js";
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  try {
+    const modeKey = "landing-mode:" + location.pathname;
+    const switchedAt = Number(sessionStorage.getItem(modeKey));
+    sessionStorage.removeItem(modeKey);
+    if (switchedAt && Date.now() - switchedAt < 4000) landingRoot.classList.add("mode-arrival", "mode-curtain");
+  } catch (_) {}
+}
+addEventListener("pagereveal", event => {
+  if (!event.viewTransition) return;
+  if (landingRoot.classList.contains("mode-arrival")) landingRoot.classList.remove("mode-curtain");
+  else event.viewTransition.skipTransition();
+});
+addEventListener("pageshow", event => {
+  if (event.persisted) landingRoot.classList.remove("mode-arrival", "mode-curtain", "mode-leaving");
+});
+</script>
+<link rel="stylesheet" href="../assets/mode-d9fe6b35b8.css">
+<link rel="prefetch" href="../">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Портреты — Владимир Никитин, Алматы</title>
@@ -12,31 +33,34 @@
 <meta property="og:url" content="https://vladtwonik.github.io/portrait/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e6d6bd'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23c98f86'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Marck+Script&family=PT+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Bad+Script&family=PT+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#e6d6bd;--ink:#3a2c22;--mute:#86715d;--line:rgba(58,44,34,.2);--acc:#b5654f;--rose:#d9a79c;--sage:#b4c0a5;--powder:#b5c6d4;--lilac:#c9b8cf;--butter:#eedc9f;--cream:#f4ead9;--cyan:#1f3a6e;
---type:"Courier New","PT Mono",ui-monospace,monospace;--hand:"Marck Script",cursive;--serif:"Cormorant Garamond",Georgia,serif;--ease:cubic-bezier(.2,.7,.2,1)}
+:root{--bg:#e8dcc4;--next-surface:#1d1b19;--rail:clamp(32px,4.6vw,74px);--paper:url(../assets/portrait-paper-d9b265bfab.webp);--emulsion:url(../assets/portrait-film-17d135ef95.webp);--ink:#3a2c22;--mute:#86715d;--line:rgba(58,44,34,.2);--acc:#b5654f;--rose:#d9a79c;--sage:#b4c0a5;--powder:#b5c6d4;--lilac:#c9b8cf;--butter:#eedc9f;--cream:#f4ead9;--cyan:#1f3a6e;
+--type:"Courier New","PT Mono",ui-monospace,monospace;--hand:"Bad Script","Segoe Script",cursive;--serif:"Cormorant Garamond",Georgia,serif;--ease:cubic-bezier(.2,.7,.2,1)}
+.mode-curtain::before{background:#121211 url(../assets/paper-v2.webp) center/cover}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;overflow-x:clip}
-body{background:var(--bg);color:var(--ink);font-family:var(--type);-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:opacity .38s}
-body.leaving{opacity:0}
+body{position:relative;isolation:isolate;background:var(--bg);color:var(--ink);font-family:var(--type);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}button{font:inherit;color:inherit}
 ::selection{background:var(--rose);color:var(--ink)}
-.paper{position:fixed;inset:0;z-index:-1;background:var(--bg) url(../assets/kraft-v2.webp) center/cover no-repeat;pointer-events:none}
-.grain{position:fixed;inset:-100%;width:300%;height:300%;background:url(../assets/grain-v2.webp);opacity:.07;mix-blend-mode:multiply;pointer-events:none;z-index:90;animation:gr 1.2s steps(6) infinite}
-@keyframes gr{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-6%,-2%)}80%{transform:translate(5%,4%)}}
-#flora{position:absolute;left:0;top:0;width:100%;z-index:0;pointer-events:none;overflow:hidden}
-.fl{position:absolute;transform:rotate(var(--r)) scale(1);opacity:.95;filter:drop-shadow(0 5px 6px rgba(70,45,25,.28));animation:flin .7s cubic-bezier(.3,1.4,.5,1) both;transition:opacity 1.5s,transform 1.5s}
-.fl.out{opacity:0;transform:rotate(calc(var(--r) + 25deg)) scale(.85)}
-@keyframes flin{from{opacity:0;transform:rotate(calc(var(--r) - 35deg)) scale(.5)}}
+.paper{position:absolute;inset:0;z-index:-2;background:var(--bg) var(--paper) center top / max(100%,1024px) auto repeat-y;pointer-events:none}
+#particles{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
 .wrap,.strip{position:relative;z-index:1}
-.wrap{max-width:1240px;margin:0 auto;padding:0 28px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px;padding-left:max(28px,calc(var(--rail) + 19px - max(0px,(100vw - 1240px)/2)))}
+.piano[hidden]{display:none}
+.piano{position:absolute;inset:0 auto 0 0;z-index:12;width:var(--rail);display:flex;flex-direction:column}
+.piano-octave{position:relative;flex:1 1 0;min-height:0;display:grid;grid-template-rows:repeat(7,minmax(0,1fr));background:url(../assets/portrait-keys-1cce6e21f7.svg) left top/100% 100% no-repeat}
+.piano button{display:block;width:90%;min-height:0;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;touch-action:manipulation}
+.piano .piano-black{position:absolute;left:0;width:66%;height:9%;transform:translateY(-50%);border-radius:0 4px 4px 0}
+.piano button:active{background:#aa674a55}
+.piano button:focus-visible{position:relative;z-index:2;outline:2px solid #915139;outline-offset:-3px}
+.piano .piano-black:focus-visible{position:absolute;outline-color:#f0d6a5}
 .t{font-family:var(--type);font-size:13px;letter-spacing:.04em}
 .ink{text-shadow:0 0 .7px rgba(58,44,34,.55)}
 .hand{font-family:var(--hand);font-weight:400}
 
 /* полоски-ярлыки сверху */
-.strip{display:flex;gap:12px;padding:14px 28px;white-space:nowrap;overflow:hidden}
+.strip{display:flex;gap:12px;padding:14px 28px 14px calc(var(--rail) + 13px);white-space:nowrap;overflow:hidden}
 .strip>span{font:12px/1 var(--type);background:var(--cream);padding:6px 9px;box-shadow:0 1px 2px rgba(58,44,34,.18);color:var(--mute)}
 .strip>span:nth-child(2n){transform:rotate(-1deg)}.strip>span:nth-child(2n+1){transform:rotate(.8deg)}
 .strip b{color:var(--ink);font-weight:400}
@@ -46,7 +70,8 @@ a{color:inherit}button{font:inherit;color:inherit}
 /* шапка и капсула */
 header{display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;height:62px}
 .logo{text-decoration:none;display:flex;align-items:baseline;gap:10px}
-.logo b{font:400 30px var(--hand)}
+.logo b{font:500 29px var(--serif);font-style:italic}
+@media(max-width:1450px){.logo span{display:none}}
 .logo span{font:11px var(--type);color:var(--mute);text-transform:lowercase}
 .pill{position:fixed;left:50%;top:54px;transform:translateX(-50%);z-index:70;display:flex;gap:8px;transition:top .35s var(--ease)}
 .pill.up{top:12px}
@@ -66,7 +91,9 @@ header{display:flex;justify-content:space-between;align-items:center;padding:12p
 .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;min-height:calc(100svh - 110px);padding:9vh 0 6vh}
 .meta{color:var(--mute);margin-bottom:22px}
 h1{font-weight:400;line-height:1}
-h1 .hand{display:block;font-size:clamp(64px,8.4vw,128px);line-height:.95;margin-bottom:18px;transform:rotate(-3deg);transform-origin:left;color:var(--ink)}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.signature{display:block;width:min(100%,470px);height:auto;overflow:visible}
+h1 .hero-ink{display:block;font-size:clamp(64px,8.4vw,128px);line-height:.95;margin-bottom:18px;transform:rotate(-3deg);transform-origin:left;color:var(--ink)}
 .cuts{display:flex;flex-wrap:wrap;gap:8px 10px;max-width:560px}
 .cut{display:inline-block;font:500 clamp(26px,3vw,42px)/1.1 var(--serif);padding:2px 12px 5px;background:#d9c2a3;box-shadow:0 2px 3px rgba(58,44,34,.25);clip-path:polygon(0 4%,3% 0,30% 3%,62% 0,97% 2%,100% 0,99% 52%,100% 96%,70% 100%,35% 97%,3% 100%,0 70%)}
 .cut:nth-child(2){background:var(--lilac);transform:rotate(1.5deg) translateY(4px);margin-left:28px}
@@ -81,7 +108,8 @@ h1 .hand{display:block;font-size:clamp(64px,8.4vw,128px);line-height:.95;margin-
 
 /* коллаж справа */
 .col{position:relative;justify-self:center;width:min(440px,100%);aspect-ratio:4/5.2}
-.print{position:absolute;inset:4% 8% 6% 6%;background:var(--cream);padding:14px 14px 54px;box-shadow:0 18px 40px rgba(70,45,25,.3),0 2px 4px rgba(70,45,25,.2);transform:rotate(2.2deg)}
+.print{position:absolute;inset:4% 8% 6% 6%;background:var(--cream) var(--paper) 20% 34% / 720px auto;padding:14px 14px 54px;box-shadow:0 18px 40px rgba(70,45,25,.3),0 2px 4px rgba(70,45,25,.2);transform:rotate(2.2deg)}
+.print::after{content:"";position:absolute;inset:14px 14px 54px;background:var(--emulsion) center/340px auto;mix-blend-mode:screen;opacity:.34;pointer-events:none}
 .print img{width:100%;height:100%;object-fit:cover;display:block;filter:sepia(.18) contrast(1.02)}
 .print figcaption{position:absolute;left:0;right:0;bottom:12px;text-align:center;font:30px var(--hand);color:#5a4636}
 .tape{position:absolute;width:130px;height:32px;background:rgba(217,167,156,.62);clip-path:polygon(0 8%,4% 0,8% 10%,12% 0,16% 9%,20% 1%,100% 0,97% 50%,100% 100%,84% 92%,80% 100%,0 100%,3% 50%);mix-blend-mode:multiply}
@@ -108,23 +136,23 @@ h2{font:400 clamp(44px,5.4vw,76px)/1 var(--hand);transform:rotate(-1.5deg);trans
 .tog button.on{background:var(--rose);color:var(--ink)}
 
 /* плёночные ленты */
-.inf{position:relative;height:min(82vh,820px);margin:0 calc(50% - 50vw);overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none;
+.inf{position:relative;height:min(82vh,820px);margin:0 calc(50% - 50vw + var(--rail)/2);overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none;
 -webkit-mask-image:linear-gradient(transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(transparent,#000 9%,#000 91%,transparent)}
 .inf.drag{cursor:grabbing}
 .tile{position:absolute;left:0;top:0;background:none;border:0;text-align:left;cursor:inherit;will-change:transform}
 .tile:hover{z-index:2}
-.tile .ph{position:relative;padding:12px 22px;background:#2c2119;transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+.tile .ph{position:relative;padding:12px 22px;background:#2c2119 var(--emulsion) top center / 250px auto;background-blend-mode:screen;transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
 .tile .ph::before{content:"";position:absolute;inset:0;pointer-events:none;
 background-image:linear-gradient(#0000 5px,#ecdcc2 5px 12px,#0000 12px),linear-gradient(#0000 5px,#ecdcc2 5px 12px,#0000 12px);
 background-size:8px 17px;background-position:left 7px top 0,right 7px top 0;background-repeat:no-repeat round}
 .tile img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;filter:sepia(.25) saturate(.75) brightness(.93) contrast(.96);transition:filter .5s;-webkit-user-drag:none;pointer-events:none;border-radius:1px}
 .tile .edge{position:absolute;left:24px;top:1px;font:8px/10px var(--type);letter-spacing:.18em;color:#d99a52;white-space:nowrap;overflow:hidden;right:24px}
-.tile .ph::after{content:"";position:absolute;inset:auto 22px 12px 22px;height:45%;background:linear-gradient(transparent,rgba(255,226,190,.32));opacity:0;transition:opacity .5s;pointer-events:none}
+.tile .ph::after{content:"";position:absolute;inset:12px 22px;background:var(--emulsion) center/290px auto,linear-gradient(transparent,rgba(255,226,190,.32));background-blend-mode:screen;mix-blend-mode:screen;opacity:.32;transition:opacity .5s;pointer-events:none}
 .tile .cap{display:none}
 @media(hover:hover){
 .tile:hover .ph{transform:scale(1.06) rotate(-.6deg);box-shadow:0 30px 50px -16px rgba(70,45,25,.55)}
 .tile:hover img{filter:sepia(0) saturate(1.2) brightness(1.03)}
-.tile:hover .ph::after{opacity:1}}
+.tile:hover .ph::after{opacity:.55}}
 .hint{margin-top:16px;color:var(--mute);text-align:center}
 
 .list{display:none;border-top:1px dashed var(--line)}
@@ -140,7 +168,7 @@ background-size:8px 17px;background-position:left 7px top 0,right 7px top 0;back
 
 /* карточки услуг — библиотечные карточки */
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
-.icard{position:relative;padding:26px 24px 24px;background:var(--cream);box-shadow:0 10px 26px rgba(70,45,25,.18);background-image:repeating-linear-gradient(transparent 0 27px,rgba(120,150,180,.25) 27px 28px);background-position:0 58px}
+.icard{position:relative;padding:26px 24px 24px;background:var(--cream);box-shadow:0 10px 26px rgba(70,45,25,.18);background-image:repeating-linear-gradient(transparent 0 27px,rgba(120,150,180,.25) 27px 28px),linear-gradient(#fcf5e6aa,#fcf5e6aa),var(--paper);background-position:0 58px,0 0,center;background-size:auto,auto,760px auto}
 .icard:nth-child(1){transform:rotate(-1.4deg);background-color:#f3e6e2}
 .icard:nth-child(2){transform:rotate(.9deg) translateY(16px);background-color:#eef0e6}
 .icard:nth-child(3){transform:rotate(-.6deg);background-color:#ecf0f3}
@@ -154,7 +182,7 @@ background-size:8px 17px;background-position:left 7px top 0,right 7px top 0;back
 /* письмо */
 .desk{position:relative;display:grid;grid-template-columns:1.2fr .8fr;gap:50px;align-items:center}
 .letter{position:relative;background:#fbf5ea;padding:46px 46px 40px;box-shadow:0 20px 50px rgba(70,45,25,.25);transform:rotate(-1deg);
-background-image:linear-gradient(90deg,transparent 58px,rgba(201,100,90,.35) 58px 59px,transparent 59px),repeating-linear-gradient(transparent 0 31px,rgba(110,140,175,.28) 31px 32px);background-position:0 0,0 30px}
+background-image:linear-gradient(90deg,transparent 58px,rgba(201,100,90,.35) 58px 59px,transparent 59px),repeating-linear-gradient(transparent 0 31px,rgba(110,140,175,.28) 31px 32px),linear-gradient(#fff9edbb,#fff9edbb),var(--paper);background-position:0 0,0 30px,0 0,center;background-size:auto,auto,auto,980px auto}
 .letter .hi{font:46px var(--hand);margin:0 0 10px 30px}
 .letter p{font:15px/32px var(--type);margin-left:30px}
 .letter .sign{font:44px var(--hand);text-align:right;margin-top:10px;color:#4a3a2d}
@@ -170,7 +198,7 @@ background-image:linear-gradient(90deg,transparent 58px,rgba(201,100,90,.35) 58p
 .env::before{content:"";position:absolute;left:0;right:0;top:0;height:120px;background:#dcc29d;clip-path:polygon(0 0,100% 0,50% 100%);opacity:.9}
 .env .pstamp{right:22px;top:16px;transform:rotate(4deg);width:92px}
 .env .pmark{right:110px;top:26px}
-.blank{position:relative;background:#fbf5ea;padding:34px 30px 26px;margin-top:70px;box-shadow:0 6px 18px rgba(70,45,25,.18)}
+.blank{position:relative;background:linear-gradient(#fff9edbb,#fff9edbb),var(--paper) center/860px auto;padding:34px 30px 26px;margin-top:70px;box-shadow:0 6px 18px rgba(70,45,25,.18)}
 .blank .hd{display:flex;justify-content:space-between;color:var(--mute);border-bottom:1px dashed var(--line);padding-bottom:12px;margin-bottom:6px}
 .blank .hd b{font:28px var(--hand);color:var(--ink);font-weight:400}
 .fld{display:block;padding:14px 0 6px;border-bottom:1px dashed rgba(58,44,34,.3)}
@@ -218,8 +246,7 @@ footer a{text-decoration:none}
 .up{animation:upin 1s var(--ease) both}.up:nth-child(2){animation-delay:.08s}.up:nth-child(3){animation-delay:.16s}.up:nth-child(4){animation-delay:.24s}
 @keyframes upin{from{opacity:0;transform:translateY(22px)}}
 .js .icard.rv.in:nth-child(1){transform:rotate(-1.4deg)}.js .icard.rv.in:nth-child(2){transform:rotate(.9deg) translateY(16px)}.js .icard.rv.in:nth-child(3){transform:rotate(-.6deg)}
-@media(hover:none){.grain{animation:none;opacity:.05}}
-@media(prefers-reduced-motion:reduce){.grain{animation:none}.js .rv{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none}}
 
 @media(max-width:980px){
 .hero{grid-template-columns:1fr;min-height:0;padding:40px 0 20px}
@@ -228,14 +255,20 @@ footer a{text-decoration:none}
 .desk{grid-template-columns:1fr;gap:40px}
 .formgrid{grid-template-columns:1fr;gap:44px}}
 @media(max-width:760px){
-.wrap{padding:0 16px}
-.strip{padding:10px 16px;gap:8px}.strip>span:nth-child(n+3){display:none}
+:root{--rail:27px}
+.wrap{padding:0 16px 0 calc(var(--rail) + 13px)}
+.strip{padding:10px 16px 10px calc(var(--rail) + 13px);gap:8px}.strip>span:nth-child(n+3){display:none}
 .logo span{display:none}
 .pill{top:auto;bottom:14px}.pill.up{top:auto}
 .pill nav,.pill .mode,.pill .wa{padding:4px}
 .pill a,.pill .mode span{font-size:13px;padding:8px 8px;white-space:nowrap}
 .pill nav a[href="#do"],.pill nav a[href="#about"],.pill .mode span{display:none}.pill{gap:6px}
-h1 .hand{font-size:clamp(56px,17vw,80px)}
+.hero{display:flex;flex-direction:column;gap:0;padding-top:28px}
+.hero>div:first-child{display:contents}
+.hero .meta{margin-bottom:14px}
+.hero .col{align-self:center;order:1;width:min(310px,92%);margin-top:20px}
+.hero .lead,.hero .ctas{order:2}
+h1 .hero-ink{margin-bottom:7px}
 .cut{font-size:26px}.cut:nth-child(2){margin-left:12px}.cut:nth-child(4){margin-left:24px}
 .lead{font-size:14px}
 .cta{flex:1 1 100%;justify-content:center;padding:15px 18px}
@@ -253,11 +286,40 @@ section{padding:60px 0 50px}
 .contacts a{flex-direction:column;align-items:flex-start;gap:4px;padding:14px 0}.contacts a span{order:-1}.contacts a:hover{padding-left:0}
 footer{padding:24px 0 96px;font-size:11px}
 .lb .top{padding:16px}.lb .stage{padding:0 8px}.lb .arr{display:none}.lb .thumbs{justify-content:flex-start;padding:14px 16px}.lb .thumbs img{height:52px}}
+@media (prefers-reduced-motion: no-preference){
+  .signature path{stroke-dasharray:1;animation:ink-stroke 1.05s cubic-bezier(.31,.05,.43,1) both}
+  .signature path:nth-child(2){animation-delay:.71s;animation-duration:.33s}
+  .mode-arrival .signature path{animation-delay:.48s}
+  .mode-arrival .signature path:nth-child(2){animation-delay:1.18s}
+  .mode-arrival .hero .up{animation:none}
+  .mode-arrival .hero .print{animation:print-slide .65s var(--ease) .39s both}
+  .mode-arrival .hero .tape{animation:tape-press .36s cubic-bezier(.27,.73,.23,1) .78s both}
+  .mode-arrival .hero .tape.b{animation-delay:.91s}
+  .mode-arrival .hero .bean{animation:bean-drop .64s cubic-bezier(.18,.74,.38,1) .64s both}
+  .mode-arrival .hero .bean:nth-of-type(3n){animation-delay:.72s;--fall-x:-66px;--fall-y:-87px}
+  .mode-arrival .hero .bean:nth-of-type(3n + 1){animation-delay:.82s;--fall-x:78px;--fall-y:-100px}
+  .mode-arrival .hero :is(.pstamp,.pmark,.note,.deco){animation:paper-place .52s var(--ease) .92s both}
+  .mode-arrival .hero :is(.lead,.ctas){animation:paper-place .44s var(--ease) .66s both}
+  .mode-arrival .hero .ctas{animation-delay:.77s}
+  .mode-arrival .hero .cut{animation:cut-place .45s var(--ease) .64s both}
+  .mode-arrival .hero .cut:nth-child(2){animation-delay:.72s}
+  .mode-arrival .hero .cut:nth-child(3){animation-delay:.8s}
+  .mode-arrival .hero .cut:nth-child(4){animation-delay:.88s}
+  .js .rv.in .tape{animation:tape-press .44s var(--ease) .26s both}
+}
+@keyframes ink-stroke{from{stroke-dashoffset:1;opacity:0}8%{opacity:1}to{stroke-dashoffset:0}}
+@keyframes print-slide{from{opacity:0;translate:92px 23px;rotate:9deg}}
+@keyframes tape-press{from{opacity:0;translate:-6px -22px;scale:.75 1;clip-path:inset(0 92% 0 0)}}
+@keyframes bean-drop{from{opacity:0;translate:var(--fall-x,44px) var(--fall-y,-110px);rotate:190deg}72%{translate:0 4px;rotate:-9deg}86%{translate:0 -2px;rotate:4deg}}
+@keyframes paper-place{from{opacity:0;translate:0 12px}}
+@keyframes cut-place{from{opacity:0;translate:-18px 8px;rotate:-5deg}}
+
 </style>
 </head>
 <body>
-<div class="paper" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
-<div id="flora" aria-hidden="true"></div>
+<div class="paper" aria-hidden="true"></div>
+<canvas id="particles" aria-hidden="true"></canvas>
+<div id="piano" class="piano" role="group" aria-label="Клавиши пианино" hidden></div>
 
 <div class="strip"><span><span class="dot"></span>запись :: <b>открыта</b></span><span>город :: <b>Алматы</b></span><span>время :: <b class="clk">--:--</b></span><span>портретов :: <b>12</b></span><span>жанр :: <b>живой портрет</b></span></div>
 
@@ -273,7 +335,11 @@ footer{padding:24px 0 96px;font-size:11px}
 <div class="hero">
 <div>
 <p class="t meta ink">almaty · портретная съёмка · 5+ лет с камерой</p>
-<h1 class="up"><span class="hand">Портреты,</span><span class="cuts"><span class="cut">в которых</span><span class="cut">вы —</span><span class="cut">это</span><span class="cut">вы</span></span></h1>
+<h1 class="up"><span class="hand hero-ink"><span class="sr-only">Портреты,</span><svg viewBox="0 0 405 137" class="signature" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  <path pathLength="1" stroke-width="2.1" d="M14 103 C30 100 54 74 71 52 C80 41 103 15 110 11 C96 15 69 21 46 22 C26 23 21 18 27 13 C36 5 69 9 106 8 C123 7 140 4 150 6 C144 11 128 24 117 36 C103 51 83 74 74 90 C67 103 78 100 91 91 C105 81 122 63 134 60 C142 58 143 68 135 77 C129 85 115 91 115 83 C115 73 131 62 139 61 C142 61 137 73 146 70 C153 69 165 59 171 55 C168 62 143 94 133 115 C128 126 124 129 126 123 C130 110 145 88 158 73 C170 60 183 51 187 55 C192 60 177 75 168 81 C183 78 198 62 206 55 C200 65 198 74 204 73 C212 71 225 55 228 51 C222 59 219 69 224 69 C231 70 242 57 249 50 C244 58 241 66 246 66 C252 66 265 55 269 48 C265 44 251 55 248 63 C250 70 264 64 278 51 C288 43 292 42 295 43 C288 50 282 59 287 61 C293 62 305 51 311 43 C306 52 299 60 305 60 C311 60 320 51 327 44 C321 54 315 62 319 64 C327 68 343 51 339 47 C336 45 327 50 321 57 C333 58 350 48 356 42 C353 49 346 60 351 61 C357 61 369 51 375 45 C381 39 387 37 389 38 C386 44 380 50 382 52 C384 56 395 47 400 44"/>
+  <path pathLength="1" stroke-width="1.35" d="M205 48 C213 47 224 44 235 44 M288 39 C300 38 310 36 320 36 M391 57 C397 55 392 64 387 67"/>
+</svg>
+</span><span class="cuts"><span class="cut">в которых</span><span class="cut">вы —</span><span class="cut">это</span><span class="cut">вы</span></span></h1>
 <p class="lead ink up">Встречаемся за час до съёмки: кофе, разговор, прогулка — и только потом камера. Чтобы в кадре был живой человек, а не «позирование».</p>
 <div class="ctas up"><a class="cta fill js-wa" href="#form" data-slot>Написать в WhatsApp</a><a class="cta" href="#form" data-slot>Отправить письмо</a></div>
 </div>
@@ -288,8 +354,8 @@ footer{padding:24px 0 96px;font-size:11px}
 <svg class="bean" style="left:2%;top:8%;transform:rotate(-24deg)" viewBox="0 0 40 56"><defs><radialGradient id="bg1" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#8a5a37"/><stop offset="1" stop-color="#3f2716"/></radialGradient></defs><ellipse cx="20" cy="28" rx="17" ry="25" fill="url(#bg1)"/><path d="M20 4C11 20 29 36 20 52" stroke="#24160c" stroke-width="3" fill="none"/></svg>
 <svg class="bean" style="left:9%;top:2%;width:20px;transform:rotate(38deg)" viewBox="0 0 40 56"><ellipse cx="20" cy="28" rx="17" ry="25" fill="url(#bg1)"/><path d="M20 4C11 20 29 36 20 52" stroke="#24160c" stroke-width="3" fill="none"/></svg>
 <svg class="bean" style="right:4%;bottom:-2%;width:22px;transform:rotate(70deg)" viewBox="0 0 40 56"><ellipse cx="20" cy="28" rx="17" ry="25" fill="url(#bg1)"/><path d="M20 4C11 20 29 36 20 52" stroke="#24160c" stroke-width="3" fill="none"/></svg>
-<img class="deco js-fl" data-i="3" src="" alt="" style="left:-10%;top:30%;width:110px;transform:rotate(-30deg)">
-<img class="deco js-fl" data-i="9" src="" alt="" style="right:-8%;top:44%;width:84px;transform:rotate(20deg)">
+<img class="deco js-fl" data-i="0" src="" alt="" style="left:-7%;top:39%;width:69px;transform:rotate(-24deg)">
+<img class="deco js-fl" data-i="2" src="" alt="" style="right:-3%;top:61%;width:54px;transform:rotate(20deg)">
 </div>
 </div>
 
@@ -369,8 +435,8 @@ footer{padding:24px 0 96px;font-size:11px}
 <div class="stage"><button class="arr l" id="lbl" aria-label="Назад">←</button><img id="lbi" alt=""><button class="arr r" id="lbr" aria-label="Вперёд">→</button></div>
 <div class="thumbs" id="lbth"></div></div>
 
-<script>const S=[{"name": "Portrait · 01", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p01/81f6e8bf87-t.webp", "f": "../assets/portrait/p01/81f6e8bf87.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/a9a321f531-t.webp", "f": "../assets/portrait/p01/a9a321f531.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/5ccc3b2d21-t.webp", "f": "../assets/portrait/p01/5ccc3b2d21.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/e390d94e59-t.webp", "f": "../assets/portrait/p01/e390d94e59.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/e7ae76aaa9-t.webp", "f": "../assets/portrait/p01/e7ae76aaa9.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/86b31d9307-t.webp", "f": "../assets/portrait/p01/86b31d9307.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/415cffb33f-t.webp", "f": "../assets/portrait/p01/415cffb33f.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/ae410a29e7-t.webp", "f": "../assets/portrait/p01/ae410a29e7.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 02", "kind": "Сад", "year": "", "imgs": [{"t": "../assets/portrait/p02/8282c4e253-t.webp", "f": "../assets/portrait/p02/8282c4e253.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/f042b87401-t.webp", "f": "../assets/portrait/p02/f042b87401.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/f9305cf475-t.webp", "f": "../assets/portrait/p02/f9305cf475.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/fed7b1bcd0-t.webp", "f": "../assets/portrait/p02/fed7b1bcd0.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/846f650e31-t.webp", "f": "../assets/portrait/p02/846f650e31.webp", "w": 720, "h": 480}, {"t": "../assets/portrait/p02/6e56618d4b-t.webp", "f": "../assets/portrait/p02/6e56618d4b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/53f5ed6509-t.webp", "f": "../assets/portrait/p02/53f5ed6509.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/e02a6caa3e-t.webp", "f": "../assets/portrait/p02/e02a6caa3e.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 03", "kind": "Город", "year": "", "imgs": [{"t": "../assets/portrait/p03/d48aeb5172-t.webp", "f": "../assets/portrait/p03/d48aeb5172.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/3f36d1dc70-t.webp", "f": "../assets/portrait/p03/3f36d1dc70.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/565ba46b03-t.webp", "f": "../assets/portrait/p03/565ba46b03.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/d65b931aba-t.webp", "f": "../assets/portrait/p03/d65b931aba.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/6e99e5bb70-t.webp", "f": "../assets/portrait/p03/6e99e5bb70.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/61510d0d42-t.webp", "f": "../assets/portrait/p03/61510d0d42.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/42b4d46f1c-t.webp", "f": "../assets/portrait/p03/42b4d46f1c.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/e02df00f62-t.webp", "f": "../assets/portrait/p03/e02df00f62.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 04", "kind": "Студия", "year": "", "imgs": [{"t": "../assets/portrait/p04/ed74ce1ad5-t.webp", "f": "../assets/portrait/p04/ed74ce1ad5.webp", "w": 405, "h": 720}, {"t": "../assets/portrait/p04/3ae4a64fb7-t.webp", "f": "../assets/portrait/p04/3ae4a64fb7.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/54b71b3b99-t.webp", "f": "../assets/portrait/p04/54b71b3b99.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/7eb3b6895a-t.webp", "f": "../assets/portrait/p04/7eb3b6895a.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/d376d3992f-t.webp", "f": "../assets/portrait/p04/d376d3992f.webp", "w": 720, "h": 720}, {"t": "../assets/portrait/p04/c95c699b1e-t.webp", "f": "../assets/portrait/p04/c95c699b1e.webp", "w": 720, "h": 720}, {"t": "../assets/portrait/p04/317ed0415e-t.webp", "f": "../assets/portrait/p04/317ed0415e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p04/426d83c680-t.webp", "f": "../assets/portrait/p04/426d83c680.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 05", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p05/8abcd9bd4a-t.webp", "f": "../assets/portrait/p05/8abcd9bd4a.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/f41ebc4112-t.webp", "f": "../assets/portrait/p05/f41ebc4112.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/d64d4d3e3d-t.webp", "f": "../assets/portrait/p05/d64d4d3e3d.webp", "w": 720, "h": 480}, {"t": "../assets/portrait/p05/170bd4a681-t.webp", "f": "../assets/portrait/p05/170bd4a681.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/30149c4044-t.webp", "f": "../assets/portrait/p05/30149c4044.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/923076b9f1-t.webp", "f": "../assets/portrait/p05/923076b9f1.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p05/b504b38e45-t.webp", "f": "../assets/portrait/p05/b504b38e45.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/00fcefd1e5-t.webp", "f": "../assets/portrait/p05/00fcefd1e5.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 06", "kind": "Интерьер", "year": "", "imgs": [{"t": "../assets/portrait/p06/782af95bcd-t.webp", "f": "../assets/portrait/p06/782af95bcd.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/fc0a7dc3c3-t.webp", "f": "../assets/portrait/p06/fc0a7dc3c3.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/8aebdadd55-t.webp", "f": "../assets/portrait/p06/8aebdadd55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/3e2c0153c8-t.webp", "f": "../assets/portrait/p06/3e2c0153c8.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/a064bea88e-t.webp", "f": "../assets/portrait/p06/a064bea88e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/3ce0e46418-t.webp", "f": "../assets/portrait/p06/3ce0e46418.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/d70eb6d00d-t.webp", "f": "../assets/portrait/p06/d70eb6d00d.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p06/e7fc1bb023-t.webp", "f": "../assets/portrait/p06/e7fc1bb023.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 07", "kind": "Вдвоём", "year": "", "imgs": [{"t": "../assets/portrait/p07/00f12af712-t.webp", "f": "../assets/portrait/p07/00f12af712.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/f49bb4f550-t.webp", "f": "../assets/portrait/p07/f49bb4f550.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/3cf71824f5-t.webp", "f": "../assets/portrait/p07/3cf71824f5.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/2abcc644ea-t.webp", "f": "../assets/portrait/p07/2abcc644ea.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/15a85d6c52-t.webp", "f": "../assets/portrait/p07/15a85d6c52.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/012288195e-t.webp", "f": "../assets/portrait/p07/012288195e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/a6433c7997-t.webp", "f": "../assets/portrait/p07/a6433c7997.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/6f7aed4378-t.webp", "f": "../assets/portrait/p07/6f7aed4378.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 08", "kind": "Парк", "year": "", "imgs": [{"t": "../assets/portrait/p08/5049cbe93b-t.webp", "f": "../assets/portrait/p08/5049cbe93b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/62ddb7ae2d-t.webp", "f": "../assets/portrait/p08/62ddb7ae2d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/2ccca01490-t.webp", "f": "../assets/portrait/p08/2ccca01490.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/e2db4b303d-t.webp", "f": "../assets/portrait/p08/e2db4b303d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/aa98c7ae55-t.webp", "f": "../assets/portrait/p08/aa98c7ae55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/aea908e6bd-t.webp", "f": "../assets/portrait/p08/aea908e6bd.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/f9ea38684f-t.webp", "f": "../assets/portrait/p08/f9ea38684f.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/70fd05b945-t.webp", "f": "../assets/portrait/p08/70fd05b945.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 09", "kind": "Город", "year": "", "imgs": [{"t": "../assets/portrait/p09/c0711b59d7-t.webp", "f": "../assets/portrait/p09/c0711b59d7.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/44ed203e20-t.webp", "f": "../assets/portrait/p09/44ed203e20.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/f1b37fc2f1-t.webp", "f": "../assets/portrait/p09/f1b37fc2f1.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/63a5993360-t.webp", "f": "../assets/portrait/p09/63a5993360.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/9bd535493d-t.webp", "f": "../assets/portrait/p09/9bd535493d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/eeee745f13-t.webp", "f": "../assets/portrait/p09/eeee745f13.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/0d4650c266-t.webp", "f": "../assets/portrait/p09/0d4650c266.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/235ff520b3-t.webp", "f": "../assets/portrait/p09/235ff520b3.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 10", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p10/03051b6509-t.webp", "f": "../assets/portrait/p10/03051b6509.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/b92b890348-t.webp", "f": "../assets/portrait/p10/b92b890348.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/f66ab8f318-t.webp", "f": "../assets/portrait/p10/f66ab8f318.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/4f22f23f65-t.webp", "f": "../assets/portrait/p10/4f22f23f65.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/e0c1e05bfb-t.webp", "f": "../assets/portrait/p10/e0c1e05bfb.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/5a557652f4-t.webp", "f": "../assets/portrait/p10/5a557652f4.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/d9b29ebd85-t.webp", "f": "../assets/portrait/p10/d9b29ebd85.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/bddba2690d-t.webp", "f": "../assets/portrait/p10/bddba2690d.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 11", "kind": "Интерьер", "year": "", "imgs": [{"t": "../assets/portrait/p11/00bcb2f0ab-t.webp", "f": "../assets/portrait/p11/00bcb2f0ab.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/5f14f3b175-t.webp", "f": "../assets/portrait/p11/5f14f3b175.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/ac76ed8c83-t.webp", "f": "../assets/portrait/p11/ac76ed8c83.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/89e9669e4a-t.webp", "f": "../assets/portrait/p11/89e9669e4a.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/da1d040e55-t.webp", "f": "../assets/portrait/p11/da1d040e55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/45aaa36086-t.webp", "f": "../assets/portrait/p11/45aaa36086.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/0c700d4616-t.webp", "f": "../assets/portrait/p11/0c700d4616.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/6e6d3ac25d-t.webp", "f": "../assets/portrait/p11/6e6d3ac25d.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 12", "kind": "Парк", "year": "", "imgs": [{"t": "../assets/portrait/p12/d6b3d88195-t.webp", "f": "../assets/portrait/p12/d6b3d88195.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/91ddb8d023-t.webp", "f": "../assets/portrait/p12/91ddb8d023.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/3ee19e6783-t.webp", "f": "../assets/portrait/p12/3ee19e6783.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/5d2358b48b-t.webp", "f": "../assets/portrait/p12/5d2358b48b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/04168cc970-t.webp", "f": "../assets/portrait/p12/04168cc970.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/fbdd54c9de-t.webp", "f": "../assets/portrait/p12/fbdd54c9de.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/0aac26d811-t.webp", "f": "../assets/portrait/p12/0aac26d811.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/94c1e0d156-t.webp", "f": "../assets/portrait/p12/94c1e0d156.webp", "w": 480, "h": 720}]}],SITE={"whatsapp": "", "instagram": "vova_nikitin__", "telegram": "vlad2nik", "form_endpoint": ""},FLORA=[],PAGE={"mode": "portrait", "sent": "Спасибо! Письмо у меня, скоро отвечу."};
+<script>const S=[{"name": "Portrait · 01", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p01/81f6e8bf87-t.webp", "f": "../assets/portrait/p01/81f6e8bf87.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/a9a321f531-t.webp", "f": "../assets/portrait/p01/a9a321f531.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/5ccc3b2d21-t.webp", "f": "../assets/portrait/p01/5ccc3b2d21.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/e390d94e59-t.webp", "f": "../assets/portrait/p01/e390d94e59.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/e7ae76aaa9-t.webp", "f": "../assets/portrait/p01/e7ae76aaa9.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/86b31d9307-t.webp", "f": "../assets/portrait/p01/86b31d9307.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/415cffb33f-t.webp", "f": "../assets/portrait/p01/415cffb33f.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p01/ae410a29e7-t.webp", "f": "../assets/portrait/p01/ae410a29e7.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 02", "kind": "Сад", "year": "", "imgs": [{"t": "../assets/portrait/p02/8282c4e253-t.webp", "f": "../assets/portrait/p02/8282c4e253.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/f042b87401-t.webp", "f": "../assets/portrait/p02/f042b87401.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/f9305cf475-t.webp", "f": "../assets/portrait/p02/f9305cf475.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/fed7b1bcd0-t.webp", "f": "../assets/portrait/p02/fed7b1bcd0.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/846f650e31-t.webp", "f": "../assets/portrait/p02/846f650e31.webp", "w": 720, "h": 480}, {"t": "../assets/portrait/p02/6e56618d4b-t.webp", "f": "../assets/portrait/p02/6e56618d4b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/53f5ed6509-t.webp", "f": "../assets/portrait/p02/53f5ed6509.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p02/e02a6caa3e-t.webp", "f": "../assets/portrait/p02/e02a6caa3e.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 03", "kind": "Город", "year": "", "imgs": [{"t": "../assets/portrait/p03/d48aeb5172-t.webp", "f": "../assets/portrait/p03/d48aeb5172.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/3f36d1dc70-t.webp", "f": "../assets/portrait/p03/3f36d1dc70.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/565ba46b03-t.webp", "f": "../assets/portrait/p03/565ba46b03.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/d65b931aba-t.webp", "f": "../assets/portrait/p03/d65b931aba.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/6e99e5bb70-t.webp", "f": "../assets/portrait/p03/6e99e5bb70.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/61510d0d42-t.webp", "f": "../assets/portrait/p03/61510d0d42.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/42b4d46f1c-t.webp", "f": "../assets/portrait/p03/42b4d46f1c.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p03/e02df00f62-t.webp", "f": "../assets/portrait/p03/e02df00f62.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 04", "kind": "Студия", "year": "", "imgs": [{"t": "../assets/portrait/p04/ed74ce1ad5-t.webp", "f": "../assets/portrait/p04/ed74ce1ad5.webp", "w": 405, "h": 720}, {"t": "../assets/portrait/p04/3ae4a64fb7-t.webp", "f": "../assets/portrait/p04/3ae4a64fb7.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/54b71b3b99-t.webp", "f": "../assets/portrait/p04/54b71b3b99.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/7eb3b6895a-t.webp", "f": "../assets/portrait/p04/7eb3b6895a.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p04/d376d3992f-t.webp", "f": "../assets/portrait/p04/d376d3992f.webp", "w": 720, "h": 720}, {"t": "../assets/portrait/p04/c95c699b1e-t.webp", "f": "../assets/portrait/p04/c95c699b1e.webp", "w": 720, "h": 720}, {"t": "../assets/portrait/p04/317ed0415e-t.webp", "f": "../assets/portrait/p04/317ed0415e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p04/426d83c680-t.webp", "f": "../assets/portrait/p04/426d83c680.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 05", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p05/8abcd9bd4a-t.webp", "f": "../assets/portrait/p05/8abcd9bd4a.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/f41ebc4112-t.webp", "f": "../assets/portrait/p05/f41ebc4112.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/d64d4d3e3d-t.webp", "f": "../assets/portrait/p05/d64d4d3e3d.webp", "w": 720, "h": 480}, {"t": "../assets/portrait/p05/170bd4a681-t.webp", "f": "../assets/portrait/p05/170bd4a681.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/30149c4044-t.webp", "f": "../assets/portrait/p05/30149c4044.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/923076b9f1-t.webp", "f": "../assets/portrait/p05/923076b9f1.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p05/b504b38e45-t.webp", "f": "../assets/portrait/p05/b504b38e45.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p05/00fcefd1e5-t.webp", "f": "../assets/portrait/p05/00fcefd1e5.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 06", "kind": "Интерьер", "year": "", "imgs": [{"t": "../assets/portrait/p06/782af95bcd-t.webp", "f": "../assets/portrait/p06/782af95bcd.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/fc0a7dc3c3-t.webp", "f": "../assets/portrait/p06/fc0a7dc3c3.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/8aebdadd55-t.webp", "f": "../assets/portrait/p06/8aebdadd55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/3e2c0153c8-t.webp", "f": "../assets/portrait/p06/3e2c0153c8.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/a064bea88e-t.webp", "f": "../assets/portrait/p06/a064bea88e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/3ce0e46418-t.webp", "f": "../assets/portrait/p06/3ce0e46418.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p06/d70eb6d00d-t.webp", "f": "../assets/portrait/p06/d70eb6d00d.webp", "w": 576, "h": 720}, {"t": "../assets/portrait/p06/e7fc1bb023-t.webp", "f": "../assets/portrait/p06/e7fc1bb023.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 07", "kind": "Вдвоём", "year": "", "imgs": [{"t": "../assets/portrait/p07/00f12af712-t.webp", "f": "../assets/portrait/p07/00f12af712.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/f49bb4f550-t.webp", "f": "../assets/portrait/p07/f49bb4f550.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/3cf71824f5-t.webp", "f": "../assets/portrait/p07/3cf71824f5.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/2abcc644ea-t.webp", "f": "../assets/portrait/p07/2abcc644ea.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/15a85d6c52-t.webp", "f": "../assets/portrait/p07/15a85d6c52.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/012288195e-t.webp", "f": "../assets/portrait/p07/012288195e.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/a6433c7997-t.webp", "f": "../assets/portrait/p07/a6433c7997.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p07/6f7aed4378-t.webp", "f": "../assets/portrait/p07/6f7aed4378.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 08", "kind": "Парк", "year": "", "imgs": [{"t": "../assets/portrait/p08/5049cbe93b-t.webp", "f": "../assets/portrait/p08/5049cbe93b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/62ddb7ae2d-t.webp", "f": "../assets/portrait/p08/62ddb7ae2d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/2ccca01490-t.webp", "f": "../assets/portrait/p08/2ccca01490.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/e2db4b303d-t.webp", "f": "../assets/portrait/p08/e2db4b303d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/aa98c7ae55-t.webp", "f": "../assets/portrait/p08/aa98c7ae55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/aea908e6bd-t.webp", "f": "../assets/portrait/p08/aea908e6bd.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/f9ea38684f-t.webp", "f": "../assets/portrait/p08/f9ea38684f.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p08/70fd05b945-t.webp", "f": "../assets/portrait/p08/70fd05b945.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 09", "kind": "Город", "year": "", "imgs": [{"t": "../assets/portrait/p09/c0711b59d7-t.webp", "f": "../assets/portrait/p09/c0711b59d7.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/44ed203e20-t.webp", "f": "../assets/portrait/p09/44ed203e20.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/f1b37fc2f1-t.webp", "f": "../assets/portrait/p09/f1b37fc2f1.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/63a5993360-t.webp", "f": "../assets/portrait/p09/63a5993360.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/9bd535493d-t.webp", "f": "../assets/portrait/p09/9bd535493d.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/eeee745f13-t.webp", "f": "../assets/portrait/p09/eeee745f13.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/0d4650c266-t.webp", "f": "../assets/portrait/p09/0d4650c266.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p09/235ff520b3-t.webp", "f": "../assets/portrait/p09/235ff520b3.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 10", "kind": "Осень", "year": "", "imgs": [{"t": "../assets/portrait/p10/03051b6509-t.webp", "f": "../assets/portrait/p10/03051b6509.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/b92b890348-t.webp", "f": "../assets/portrait/p10/b92b890348.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/f66ab8f318-t.webp", "f": "../assets/portrait/p10/f66ab8f318.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/4f22f23f65-t.webp", "f": "../assets/portrait/p10/4f22f23f65.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/e0c1e05bfb-t.webp", "f": "../assets/portrait/p10/e0c1e05bfb.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/5a557652f4-t.webp", "f": "../assets/portrait/p10/5a557652f4.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/d9b29ebd85-t.webp", "f": "../assets/portrait/p10/d9b29ebd85.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p10/bddba2690d-t.webp", "f": "../assets/portrait/p10/bddba2690d.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 11", "kind": "Интерьер", "year": "", "imgs": [{"t": "../assets/portrait/p11/00bcb2f0ab-t.webp", "f": "../assets/portrait/p11/00bcb2f0ab.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/5f14f3b175-t.webp", "f": "../assets/portrait/p11/5f14f3b175.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/ac76ed8c83-t.webp", "f": "../assets/portrait/p11/ac76ed8c83.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/89e9669e4a-t.webp", "f": "../assets/portrait/p11/89e9669e4a.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/da1d040e55-t.webp", "f": "../assets/portrait/p11/da1d040e55.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/45aaa36086-t.webp", "f": "../assets/portrait/p11/45aaa36086.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/0c700d4616-t.webp", "f": "../assets/portrait/p11/0c700d4616.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p11/6e6d3ac25d-t.webp", "f": "../assets/portrait/p11/6e6d3ac25d.webp", "w": 480, "h": 720}]}, {"name": "Portrait · 12", "kind": "Парк", "year": "", "imgs": [{"t": "../assets/portrait/p12/d6b3d88195-t.webp", "f": "../assets/portrait/p12/d6b3d88195.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/91ddb8d023-t.webp", "f": "../assets/portrait/p12/91ddb8d023.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/3ee19e6783-t.webp", "f": "../assets/portrait/p12/3ee19e6783.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/5d2358b48b-t.webp", "f": "../assets/portrait/p12/5d2358b48b.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/04168cc970-t.webp", "f": "../assets/portrait/p12/04168cc970.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/fbdd54c9de-t.webp", "f": "../assets/portrait/p12/fbdd54c9de.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/0aac26d811-t.webp", "f": "../assets/portrait/p12/0aac26d811.webp", "w": 480, "h": 720}, {"t": "../assets/portrait/p12/94c1e0d156-t.webp", "f": "../assets/portrait/p12/94c1e0d156.webp", "w": 480, "h": 720}]}],SITE={"whatsapp": "", "instagram": "vova_nikitin__", "telegram": "vlad2nik", "form_endpoint": ""},FLORA=["../assets/flora/b4e9eefef2.webp", "../assets/flora/6945b23d41.webp", "../assets/flora/5edb92347a.webp", "../assets/flora/79059198c0.webp", "../assets/flora/7136c8f84c.webp", "../assets/flora/e2fd8989c6.webp"],PAGE={"mode": "portrait", "sent": "Спасибо! Письмо у меня, скоро отвечу."};
 document.querySelectorAll('.js-fl').forEach(i=>{const f=FLORA[+i.dataset.i%Math.max(1,FLORA.length)];if(f)i.src=f});</script>
-<script src="../assets/site-89000719b2.js"></script>
+<script src="../assets/site-fef79da027.js"></script>
 </body>
 </html>
