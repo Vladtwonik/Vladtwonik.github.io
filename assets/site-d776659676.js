@@ -3,10 +3,10 @@ const N=S.length;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const HOVER=matchMedia('(hover:hover) and (pointer:fine)').matches,CALM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const mod=(a,n)=>((a%n)+n)%n;
-const FILM=PAGE.mode=='portrait';
+const PORTRAIT=PAGE.mode=='portrait';
 
 /* contacts */
-const waText=FILM?'Здравствуйте! Пишу с сайта по поводу портретной съёмки.':'Здравствуйте! Пишу с сайта по поводу съёмки.';
+const waText=PORTRAIT?'Здравствуйте! Пишу с сайта по поводу портретной съёмки.':'Здравствуйте! Пишу с сайта по поводу съёмки.';
 const waUrl=t=>'https://wa.me/'+SITE.whatsapp+'?text='+encodeURIComponent(t);
 if(SITE.whatsapp)$$('.js-wa').forEach(a=>{a.href=waUrl(waText);a.target='_blank';a.rel='noopener'});
 else $$('.js-wa').forEach(a=>a.removeAttribute('target'));
@@ -59,22 +59,22 @@ $('#lbx').onclick=closeLb;$('#lbl').onclick=()=>show(ci-1);$('#lbr').onclick=()=
 addEventListener('keydown',e=>{if(!lb.classList.contains('on'))return;if(e.key=='Escape')closeLb();if(e.key=='ArrowRight')show(ci+1);if(e.key=='ArrowLeft')show(ci-1)});
 let tx;lb.ontouchstart=e=>tx=e.touches[0].clientX;lb.ontouchend=e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)show(ci+(d<0?1:-1))};
 
-/* infinite grid (fashion: карточки; portrait: вертикальные плёночные ленты) */
+/* Infinite gallery */
 (()=>{const view=$('#inf');let tiles=[],tw,th,gx,gy,sx,sy,cols,rows,ox=0,oy=0,vx=0,vy=0,live=false,hov=false,drag=null;
 function layout(){const W=view.clientWidth,H=view.clientHeight;const mob=W<760;
-if(FILM){tw=mob?W/2.25:Math.min(290,Math.max(190,W/5.4));gx=mob?16:34;gy=0;th=(tw-44)*4/3+24}
+if(PORTRAIT){tw=mob?W/2.25:Math.min(290,Math.max(190,W/5.4));gx=mob?12:22;gy=mob?12:22;th=tw*4/3}
 else{tw=mob?W/2.35:Math.min(300,Math.max(180,W/5.6));gx=gy=mob?14:24;th=tw*4/3+40}
 sx=tw+gx;sy=th+gy;
 const c=Math.ceil(W/sx)+2,r=Math.ceil(H/sy)+2;if(c==cols&&r==rows){tiles.forEach(t=>t.el.style.width=tw+'px');return}
 cols=c;rows=r;view.innerHTML='';tiles=[];for(let k=0;k<cols*rows;k++){const el=document.createElement('button');el.className='tile';el.type='button';
-el.innerHTML='<div class="ph"><img alt="" draggable="false" decoding="async"><span class="edge"></span></div><div class="cap"><b></b><span class="chip"></span><span class="chip"></span></div>';
-el.style.width=tw+'px';view.appendChild(el);tiles.push({el,img:el.querySelector('img'),cap:el.querySelectorAll('.cap>*'),edge:el.querySelector('.edge'),idx:-1})}}
+el.innerHTML='<div class="ph"><img alt="" draggable="false" decoding="async"></div><div class="cap"><b></b><span class="chip"></span><span class="chip"></span></div>';
+el.style.width=tw+'px';view.appendChild(el);tiles.push({el,img:el.querySelector('img'),cap:el.querySelectorAll('.cap>*'),idx:-1})}}
 function render(){const fx=Math.floor(ox/sx),fy=Math.floor(oy/sy),rx=ox-fx*sx,ry=oy-fy*sy;
-tiles.forEach((t,k)=>{const c=k%cols,r=k/cols|0,wc=fx+c-1,wr=fy+r-1;const lift=FILM?mod(wc*37,5)*th*.17:mod(wc,2)*th*.28;
+tiles.forEach((t,k)=>{const c=k%cols,r=k/cols|0,wc=fx+c-1,wr=fy+r-1;const lift=PORTRAIT?mod(wc*37,5)*th*.12:mod(wc,2)*th*.28;
 t.el.style.transform=`translate3d(${(c-1)*sx-rx}px,${(r-1)*sy-ry-lift}px,0)`;const idx=mod(wc+wr*5,N);
 if(t.idx!==idx){t.idx=idx;const s=S[idx];t.img.src=s.imgs[0].t;t.img.alt=s.name;t.cap[0].textContent=s.name;t.cap[1].textContent=s.kind;t.cap[2].textContent=s.year;
-t.edge.textContent=(FILM?'SAFETY FILM 400  ▸ '+String(idx+1).padStart(2,'0')+'A  ·  '+s.kind:'');t.el.setAttribute('aria-label',s.name+', открыть')}})}
-function loop(){if(!live)return;if(!drag){ox+=vx;oy+=vy;vx*=.93;vy*=.93;if(!hov&&!CALM&&Math.abs(vx)<.3)FILM?oy+=.3:ox+=.35}render();requestAnimationFrame(loop)}
+t.el.setAttribute('aria-label',s.name+', открыть')}})}
+function loop(){if(!live)return;if(!drag){ox+=vx;oy+=vy;vx*=.93;vy*=.93;if(!hov&&!CALM&&Math.abs(vx)<.3)PORTRAIT?oy+=.3:ox+=.35}render();requestAnimationFrame(loop)}
 view.addEventListener('pointerdown',e=>{if(e.button)return;drag={x:e.clientX,y:e.clientY,m:0,t:e.target.closest('.tile'),id:e.pointerId};vx=vy=0});
 view.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;drag.m+=Math.abs(dx)+Math.abs(dy);
 if(drag.m>6&&!view.classList.contains('drag')){view.classList.add('drag');try{view.setPointerCapture(drag.id)}catch(_){}}
@@ -88,7 +88,7 @@ S.forEach(s=>{const i=new Image();i.src=s.imgs[0].t});
 layout();render();addEventListener('resize',()=>{layout();render()});
 new IntersectionObserver(([e])=>{const was=live;live=e.isIntersecting;if(live&&!was)requestAnimationFrame(loop)}).observe(view)})();
 
-if(!HOVER){const h=$('.hint');if(h)h.textContent=FILM?'← листайте плёнку вбок · нажмите на кадр →':'← листайте вбок · нажмите на съёмку →'}
+if(!HOVER){const h=$('.hint');if(h)h.textContent=PORTRAIT?'← листайте вбок · нажмите на кадр →':'← листайте вбок · нажмите на съёмку →'}
 
 /* list view */
 (()=>{const list=$('#list'),peek=$('#peek');
@@ -103,13 +103,13 @@ try{const v=localStorage.getItem('view');if(v)set(v)}catch(_){}})();
 
 /* Pointer particles belong to the paper layer. */
 (() => {
-  if (!HOVER || CALM || (FILM && !FLORA.length)) return;
+  if (!HOVER || CALM || (PORTRAIT && !FLORA.length)) return;
   const canvas = $('#particles');
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   const size = 4;
-  const sprites = FILM ? FLORA.map(src => {
+  const sprites = PORTRAIT ? FLORA.map(src => {
     const image = new Image();
     image.src = src;
     return image;
@@ -160,7 +160,7 @@ try{const v=localStorage.getItem('view');if(v)set(v)}catch(_){}})();
       }
     }
     ctx.globalAlpha = 1;
-    if (!FILM && particles.length) {
+    if (!PORTRAIT && particles.length) {
       for (const node of obstacles) {
         const rect = node.getBoundingClientRect();
         if (rect.width && rect.height && rect.bottom > 0 && rect.top < height) {
@@ -192,9 +192,9 @@ try{const v=localStorage.getItem('view');if(v)set(v)}catch(_){}})();
     }
     if (previous) distance += Math.hypot(e.clientX - previous.x, e.clientY - previous.y);
     previous = {x: e.clientX, y: e.clientY};
-    if (distance < (FILM ? 230 : 15)) return;
+    if (distance < (PORTRAIT ? 230 : 15)) return;
     distance = 0;
-    if (FILM) {
+    if (PORTRAIT) {
       if (Math.random() > .58) return;
       const ready = sprites.filter(image => image.complete && image.naturalWidth);
       if (ready.length) flower(e.pageX, e.pageY, ready[Math.floor(Math.random() * ready.length)], false, random(0, Math.PI * 2));
@@ -209,7 +209,7 @@ try{const v=localStorage.getItem('view');if(v)set(v)}catch(_){}})();
   addEventListener('click', e => {
     if (e.pointerType !== 'mouse' || e.target.closest(skip) || lb.classList.contains('on')) return;
     const turn = random(0, Math.PI * 2);
-    if (FILM) {
+    if (PORTRAIT) {
       const pool = sprites.filter(image => image.complete && image.naturalWidth);
       const count = Math.min(pool.length, Math.random() < .7 ? 4 : 5);
       const burst = new Set();
@@ -252,7 +252,7 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.targ
 $$('.rv').forEach(el=>io.observe(el));
 const tick=()=>{const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Almaty'});$$('.clk').forEach(c=>c.textContent=t)};tick();setInterval(tick,30000);
 
-/* A painted octave repeats down the paper. Each key plays a short mallet phrase. */
+/* The painted keys play a slow phrase with a soft bowed layer and room echo. */
 (() => {
   const rail = $('#piano');
   const Audio = window.AudioContext || window.webkitAudioContext;
@@ -260,25 +260,82 @@ const tick=()=>{const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',mi
 
   const whites = [0, 2, 4, 5, 7, 9, 11];
   const phrases = [
-    [[60, 64, 67], .017], [[67, 69, 67, 72], .061],
-    [[62, 69], 0],        [[72, 76, 79], .035],
-    [[64, 67, 72], .014], [[53, 57, 60], .020],
-    [[69, 72, 69, 76], .055], [[55, 62, 67], .020],
-    [[67, 76], .013],     [[57, 60, 64], .018],
-    [[72, 76, 72, 74], .057], [[64, 71], 0],
+    [[57, 62, 65], 1.25], [[65, 64, 62], 1.20],
+    [[55, 62], 1.10],     [[60, 64, 67], 1.20],
+    [[57, 60, 64], 1.15], [[53, 60, 65], 1.35],
+    [[67, 65, 62], 1.25], [[55, 60, 64], 1.05],
+    [[62, 60, 57], 1.30], [[57, 64, 69], 1.35],
+    [[65, 67, 64], 1.40], [[55, 62, 65], 1.20],
   ];
-  // The long fundamental and octave ring like a tine. The higher modes give the wooden attack.
-  const partials = [[1, .096, .67], [2.004, .031, .35], [3.992, .029, .145], [8.91, .011, .064]];
-  let audio, master, tabKey;
+  let audio, mix, bowWave, tabKey;
+
+  function prepareAudio() {
+    audio = new Audio();
+    mix = audio.createBiquadFilter();
+    mix.type = 'lowpass';
+    mix.frequency.value = 1550;
+    mix.Q.value = 0;
+    const master = audio.createDynamicsCompressor();
+    master.threshold.value = -20;
+    mix.connect(master).connect(audio.destination);
+
+    const delay = audio.createDelay();
+    delay.delayTime.value = .94;
+    const damping = audio.createBiquadFilter();
+    damping.type = 'lowpass';
+    damping.frequency.value = 980;
+    damping.Q.value = 0;
+    const feedback = audio.createGain();
+    feedback.gain.value = .39;
+    const wet = audio.createGain();
+    wet.gain.value = .31;
+    mix.connect(delay).connect(damping);
+    damping.connect(feedback).connect(delay);
+    damping.connect(wet).connect(master);
+
+    bowWave = audio.createPeriodicWave(
+      new Float32Array([0, 0, 0, 0, 0]),
+      new Float32Array([0, 1, .35, .20, .09])
+    );
+  }
+
+  function voice(start, pitch, level, attack, release) {
+    const tone = audio.createOscillator();
+    const gain = audio.createGain();
+    tone.frequency.value = pitch;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(level, start + attack);
+    gain.gain.exponentialRampToValueAtTime(level * .38, start + attack + (release - attack) * .30);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + release);
+    tone.connect(gain).connect(mix);
+    return tone;
+  }
+
+  function note(start, pitch, strength) {
+    const felt = voice(start, pitch, .104 * strength, .18, 2.60);
+    const overtone = voice(start, pitch * 2.001, .016 * strength, .12, 1.45);
+    const bow = voice(start, pitch, .062 * strength, .66, 3.40);
+    bow.setPeriodicWave(bowWave);
+    const vibrato = audio.createOscillator();
+    const depth = audio.createGain();
+    vibrato.frequency.value = 4.8;
+    depth.gain.setValueAtTime(0, start);
+    depth.gain.linearRampToValueAtTime(8, start + 1.1);
+    vibrato.connect(depth).connect(bow.detune);
+
+    felt.start(start);
+    felt.stop(start + 2.61);
+    overtone.start(start);
+    overtone.stop(start + 1.46);
+    bow.start(start);
+    bow.stop(start + 3.41);
+    vibrato.start(start);
+    vibrato.stop(start + 3.41);
+  }
 
   async function play(key) {
     try {
-      if (!audio) {
-        audio = new Audio();
-        master = audio.createDynamicsCompressor();
-        master.threshold.value = -17;
-        master.connect(audio.destination);
-      }
+      if (!audio) prepareAudio();
       if (audio.state !== 'running') await audio.resume();
     } catch (_) {
       return;
@@ -286,25 +343,12 @@ const tick=()=>{const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',mi
 
     const [notes, spacing] = phrases[Number(key.dataset.phrase)];
     const shift = Number(key.dataset.shift);
-    const time = audio.currentTime + .008;
+    const time = audio.currentTime + .02;
     notes.forEach((midi, index) => {
-      const start = time + index * spacing;
-      const fundamental = 440 * 2 ** ((midi + shift - 69) / 12);
-      const strength = index ? .83 : 1;
-      partials.forEach(([ratio, level, decay]) => {
-        const tone = audio.createOscillator();
-        const gain = audio.createGain();
-        tone.frequency.value = fundamental * ratio;
-        gain.gain.setValueAtTime(.0001, start);
-        gain.gain.exponentialRampToValueAtTime(level * strength, start + .004);
-        gain.gain.exponentialRampToValueAtTime(level * strength * .37, start + decay * .20);
-        gain.gain.exponentialRampToValueAtTime(.0001, start + decay);
-        tone.connect(gain).connect(master);
-        tone.start(start);
-        tone.stop(start + decay + .008);
-      });
+      const pitch = 440 * 2 ** ((midi + shift - 69) / 12);
+      note(time + index * spacing, pitch, 1 - index * .16);
     });
-    if (!CALM) key.animate([{backgroundColor: '#aa674a55'}, {backgroundColor: 'transparent'}], {duration: 260});
+    if (!CALM) key.animate([{backgroundColor: '#aa674a55'}, {backgroundColor: 'transparent'}], {duration: 490});
   }
 
   function appendOctave(index) {
@@ -315,7 +359,7 @@ const tick=()=>{const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',mi
       key.type = 'button';
       key.tabIndex = -1;
       key.dataset.phrase = phrase;
-      key.dataset.shift = index % 3 === 1 ? 12 : 0;
+      key.dataset.shift = index % 3 === 1 ? -12 : 0;
       key.setAttribute('aria-label', 'Клавиша ' + (index * 12 + phrase + 1));
       if (boundary) {
         key.className = 'piano-black';
